@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+
+# Environments
+.venv/
+
+# Build artifacts
+dist/
+build/
+
+# Bundled ffmpeg binaries
+ffmpeg/*
+!ffmpeg/.gitkeep
