@@ -1,0 +1,1 @@
+"""Preview rendering utilities (placeholder)."""
