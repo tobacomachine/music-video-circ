@@ -1,3 +1,4 @@
+
 from __future__ import annotations
 
 import argparse
@@ -22,6 +23,8 @@ def main() -> None:
         print(f"Preset: {args.preset}")
     ui_main()
 
+=======
+from app.ui.main_window import main
 
 if __name__ == "__main__":
     main()

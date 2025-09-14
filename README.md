@@ -22,13 +22,13 @@ python run.py
 ruff check .
 pytest -q
 ```
-
 ## Análisis de audio (CLI)
 
 ```bash
 python -m app.cli.analyze_audio --audio assets/example.wav --out analysis.json
 ```
 
+=======
 ## Presets
 
 Los presets JSON se ubican en `assets/presets`. Incluye un preset de ejemplo
