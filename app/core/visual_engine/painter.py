@@ -71,18 +71,48 @@ if _HAVE_QT:  # pragma: no cover - Qt path
             self._painter = QPainter(self._image)
             self._painter.setRenderHint(QPainter.Antialiasing)
 
-        def end_frame(self) -> QImage | np.ndarray:
+        def end_frame(self) -> "QImage | np.ndarray":
+            # Cierra el QPainter si sigue activo
             if self._painter is not None:
                 self._painter.end()
                 self._painter = None
+
             assert self._image is not None
             img = self._image
+
             if self.headless:
-                ptr = img.constBits()
-                ptr.setsize(img.height() * img.bytesPerLine())
-                arr = np.frombuffer(ptr, dtype=np.uint8)
-                arr = arr.reshape((img.height(), img.width(), 3))
-                return np.array(arr)
+                # En PySide6, constBits() devuelve un memoryview (sin setsize).
+                # Convertimos el buffer en un array 2D (height x bytesPerLine) y recortamos a width*channels.
+                import numpy as np
+
+                h = img.height()
+                w = img.width()
+                stride = img.bytesPerLine()  # puede ser > w*channels por alineación
+                ptr = img.constBits()  # memoryview
+                arr = np.frombuffer(ptr, dtype=np.uint8).reshape((h, stride))
+
+                if img.format() == QImage.Format.Format_RGB888:
+                    ch = 3
+                    frame = arr[:, : w * ch].reshape((h, w, ch)).copy()
+                elif img.format() in (
+                    QImage.Format.Format_RGBA8888,
+                    QImage.Format.Format_RGBA8888_Premultiplied,
+                ):
+                    ch = 4
+                    rgba = arr[:, : w * ch].reshape((h, w, ch))
+                    # Si tu pipeline espera RGB, quitamos alfa
+                    frame = rgba[:, :, :3].copy()
+                else:
+                    # Fallback: convierte a RGB888 y repite el proceso (más lento)
+                    rgb = img.convertToFormat(QImage.Format.Format_RGB888)
+                    h2, w2, stride2 = rgb.height(), rgb.width(), rgb.bytesPerLine()
+                    ptr2 = rgb.constBits()
+                    arr2 = np.frombuffer(ptr2, dtype=np.uint8).reshape((h2, stride2))
+                    frame = arr2[:, : w2 * 3].reshape((h2, w2, 3)).copy()
+
+                return frame  # np.ndarray (H, W, 3) uint8
+
+            # En modo no headless, devolvemos el QImage para que la UI lo muestre
             return img
 
         def clear(self, color: Tuple[int, int, int] | str) -> None:
@@ -212,7 +242,9 @@ else:  # Pillow based fallback -------------------------------------------------
 
     __all__ = ["Painter"]
 
-    def _rgba(color: Tuple[int, int, int] | str, alpha: float) -> Tuple[int, int, int, int]:
+    def _rgba(
+        color: Tuple[int, int, int] | str, alpha: float
+    ) -> Tuple[int, int, int, int]:
         if isinstance(color, str):
             r, g, b = _hex_to_rgb(color)
         else:
@@ -347,7 +379,9 @@ else:  # Pillow based fallback -------------------------------------------------
             py = self.height / 2.0 - y * half
             return px, py
 
-        def _linear_gradient_array(self, colors: list[str], angle_deg: float) -> np.ndarray:
+        def _linear_gradient_array(
+            self, colors: list[str], angle_deg: float
+        ) -> np.ndarray:
             w, h = self.width, self.height
             ang = math.radians(angle_deg)
             xx, yy = np.meshgrid(np.linspace(-1, 1, w), np.linspace(-1, 1, h))
@@ -359,4 +393,3 @@ else:  # Pillow based fallback -------------------------------------------------
             g = np.interp(t, stops, cols[:, 1])
             b = np.interp(t, stops, cols[:, 2])
             return np.dstack([r, g, b])
-
