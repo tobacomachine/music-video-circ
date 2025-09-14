@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "meta": {
+    "name": "minimal ring",
+    "author": "",
+    "created": "2025-09-14"
+  },
+  "output": {
+    "resolution": {
+      "width": 1920,
+      "height": 1080
+    },
+    "fps": 24,
+    "aspect_mode": "fit",
+    "profile": "youtube_1080p24"
+  },
+  "background": {
+    "type": "gradient_dynamic",
+    "colors": [
+      "#0f0f1a",
+      "#101a2b",
+      "#192a56"
+    ],
+    "angle": 45.0,
+    "anim": null,
+    "reactivity": {
+      "target": "bass",
+      "intensity": 0.6
+    }
+  },
+  "visual": {
+    "mode": {
+      "ring": true,
+      "bars": false
+    },
+    "ring": {
+      "base_radius": 0.35,
+      "thickness": 0.02,
+      "glow": 0.4
+    },
+    "bars": {
+      "count": 96,
+      "scale": 0.25,
+      "distribution": "log",
+      "roundness": 0.4
+    },
+    "color": {
+      "palette": "auto",
+      "gamma": 1.2
+    },
+    "mapping": {
+      "attack_ms": 80,
+      "release_ms": 220,
+      "sensitivity": 0.8,
+      "threshold": 0.15
+    }
+  },
+  "center_image": {
+    "path": null,
+    "reactivity": {
+      "scale_on_beat": 0.15,
+      "rotate_per_sec": 5.0,
+      "shake": 0.0,
+      "bloom": 0.2
+    }
+  },
+  "audio": {
+    "normalize": true,
+    "analysis": {
+      "sr": 44100,
+      "n_fft": 2048,
+      "hop": 512,
+      "bands": [
+        [20, 160],
+        [160, 2000],
+        [2000, 16000]
+      ],
+      "beat_track": true
+    }
+  }
+}
